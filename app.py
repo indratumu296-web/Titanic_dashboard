@@ -195,3 +195,44 @@ elif page == "Test":
                         f"Question {i + 1}: incorrect. "
                         f"Correct answer: {item['answer']}"
                     )
+
+
+
+
+
+
+
+st.sidebar.markdown("""
+<style>
+[data-testid="stSidebar"] {
+    position: relative;
+}
+
+.sidebar-footer {
+    position: fixed;
+    bottom: 15px;
+    left: 10px;
+    width: 320px;
+    padding: 15px;
+    background-color: rgba(255, 255, 255, 0.04);
+    border: 1px solid #454650;
+    border-radius: 10px;
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    z-index: 999;
+}
+
+.sidebar-footer span {
+    font-size: 23px;
+}
+</style>
+
+<div class="sidebar-footer">
+    <span>👤</span>
+    Created by Indra Reddy
+</div>
+""", unsafe_allow_html=True)
