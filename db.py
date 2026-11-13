@@ -4,7 +4,6 @@ import sqlite3
 from pathlib import Path
 
 import pandas as pd
-from dotenv import load_dotenv
 
 try:
     import psycopg2
@@ -13,14 +12,32 @@ except ModuleNotFoundError:
 
 BASE_DIR = Path(__file__).resolve().parent
 CSV_PATH = BASE_DIR / "Titanic-Dataset.csv"
-load_dotenv(BASE_DIR / ".env")
+
+
+def _load_env_file():
+    env_path = BASE_DIR / ".env"
+    if not env_path.is_file():
+        return
+
+    for line in env_path.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        key = key.strip()
+        value = value.strip().strip("\"'")
+        if key:
+            os.environ.setdefault(key, value)
+
+
+_load_env_file()
 
 DB_CONFIG = {
-    "host": os.getenv("SUPABASE_HOST", ""),
+    "host": os.getenv("SUPABASE_HOST", " db.psbvvwvtrvfwzhqyzwix.supabase.co"),
     "port": os.getenv("SUPABASE_PORT", "5432"),
     "dbname": os.getenv("SUPABASE_DBNAME", "postgres"),
     "user": os.getenv("SUPABASE_USER", "postgres"),
-    "password": os.getenv("SUPABASE_DB_PASSWORD", ""),
+    "password": os.getenv("SUPABASE_DB_PASSWORD", "Indra@296!jd"),
     "sslmode": "require",
     "connect_timeout": int(os.getenv("SUPABASE_CONNECT_TIMEOUT", "10")),
 }
@@ -69,7 +86,13 @@ def _rewrite_sqlite_query(sql, params):
 
 
 def run_query(sql, params=None):
-    if psycopg2 is None:
+    password = DB_CONFIG["password"]
+    if (
+        psycopg2 is None
+        or not DB_CONFIG["host"]
+        or not password
+        or password == "replace_with_your_supabase_database_password"
+    ):
         return _run_sqlite_query(sql, params)
 
     try:

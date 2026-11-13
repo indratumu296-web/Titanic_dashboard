@@ -1,6 +1,5 @@
 streamlit==1.65.0
 pandas==2.3.3
 psycopg2-binary==2.9.13
-python-dotenv
 numpy==2.2.6
 altair==5.5.0
