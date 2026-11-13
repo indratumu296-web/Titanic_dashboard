@@ -18,6 +18,7 @@ DB_CONFIG = {
     "user": os.getenv("SUPABASE_USER", "postgres"),
     "password": os.getenv("SUPABASE_DB_PASSWORD", ""),
     "sslmode": "require",
+    "connect_timeout": int(os.getenv("SUPABASE_CONNECT_TIMEOUT", "10")),
 }
 
 
@@ -79,7 +80,7 @@ def run_query(sql, params=None):
             return pd.DataFrame(rows, columns=columns)
         finally:
             conn.close()
-    except Exception:
+    except psycopg2.OperationalError:
         sqlite_conn = _sqlite_connection()
         try:
             sqlite_sql, sqlite_params = _rewrite_sqlite_query(sql, params)
