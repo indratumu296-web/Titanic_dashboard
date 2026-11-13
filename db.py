@@ -4,8 +4,12 @@ import sqlite3
 from pathlib import Path
 
 import pandas as pd
-import psycopg2
 from dotenv import load_dotenv
+
+try:
+    import psycopg2
+except ModuleNotFoundError:
+    psycopg2 = None
 
 BASE_DIR = Path(__file__).resolve().parent
 CSV_PATH = BASE_DIR / "Titanic-Dataset.csv"
@@ -65,6 +69,9 @@ def _rewrite_sqlite_query(sql, params):
 
 
 def run_query(sql, params=None):
+    if psycopg2 is None:
+        return _run_sqlite_query(sql, params)
+
     try:
         conn = psycopg2.connect(**DB_CONFIG)
         try:
@@ -81,14 +88,18 @@ def run_query(sql, params=None):
         finally:
             conn.close()
     except psycopg2.OperationalError:
-        sqlite_conn = _sqlite_connection()
-        try:
-            sqlite_sql, sqlite_params = _rewrite_sqlite_query(sql, params)
-            if sqlite_params is None:
-                sqlite_params = ()
-            cursor = sqlite_conn.execute(sqlite_sql, sqlite_params)
-            rows = cursor.fetchall()
-            columns = [c[0] for c in cursor.description]
-            return pd.DataFrame(rows, columns=columns)
-        finally:
-            sqlite_conn.close()
+        return _run_sqlite_query(sql, params)
+
+
+def _run_sqlite_query(sql, params):
+    sqlite_conn = _sqlite_connection()
+    try:
+        sqlite_sql, sqlite_params = _rewrite_sqlite_query(sql, params)
+        if sqlite_params is None:
+            sqlite_params = ()
+        cursor = sqlite_conn.execute(sqlite_sql, sqlite_params)
+        rows = cursor.fetchall()
+        columns = [column[0] for column in cursor.description]
+        return pd.DataFrame(rows, columns=columns)
+    finally:
+        sqlite_conn.close()
